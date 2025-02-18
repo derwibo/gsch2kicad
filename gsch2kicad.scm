@@ -83,14 +83,14 @@
 )
 
 ; Get the value for attribute 'name'
-; Returns the text value of the first matching attribute or the empty text if none found
-(define (get-attrib attribs name)
+; Returns the text value of the first matching attribute or the default value if none found
+(define (get-attrib attribs name default)
 	(cond
-		((eq? attribs '()) "")
+		((eq? attribs '()) default)
 		((equal? (attrib-name (car attribs)) name)
 			(attrib-value (car attribs))
 		)
-		(else (get-attrib (cdr attribs) name))
+		(else (get-attrib (cdr attribs) name default))
 	)
 )
 
@@ -153,11 +153,11 @@
 			(unit 1)
 			(compsym (make-component/library basename '(0 . 0) 0 #f #t))
 			(attr (inherited-attribs compsym))
-			(refdes (get-attrib attr "refdes"))
-			(device (get-attrib attr "device"))
-			(value (get-attrib attr "value"))
-			(footprint (get-attrib attr "footprint"))
-			(netname (get-attrib attr "netname"))
+			(refdes (get-attrib attr "refdes" ""))
+			(device (get-attrib attr "device" ""))
+			(value (get-attrib attr "value" ""))
+			(footprint (get-attrib attr "footprint" ""))
+			(netname (get-attrib attr "netname" ""))
 			(netcnt (get-num-attrib attr "net"))
 			(pincount (get-pincount compsym))
 			(pinnames-visible? #f)
@@ -190,7 +190,7 @@
 		(format stream "\t\t\t)\n")
 		(while #t
 			(let* (
-					(slot (get-attrib (object-attribs comp) "slot"))
+					(slot (get-attrib (object-attribs comp) "slot" ""))
 					(attr (inherited-attribs compsym))
 					(slotdef (if (not (string-null? slot)) (get-slotdef attr slot) '()))
 				)
@@ -355,9 +355,9 @@
 									(p1 (line-start item))
 									(p2 (line-end item)))
 									(let* (
-											(name  (get-attrib attr "pinlabel"))
-											(number (get-attrib attr "pinnumber"))
-											(pintype (get-attrib attr "pintype"))
+											(name  (get-attrib attr "pinlabel" ""))
+											(number (get-attrib attr "pinnumber" ""))
+											(pintype (get-attrib attr "pintype" ""))
 											(x1 (car p1))
 											(y1 (cdr p1))
 											(x2 (car p2))
@@ -373,7 +373,7 @@
 										)
 										(if (not (null? slotdef))
 											(let (
-													(pinseq (string->number (get-attrib attr "pinseq")))
+													(pinseq (string->number (get-attrib attr "pinseq" "")))
 												)
 												(format #t "Query pinseq: ~D\n" pinseq)
 												(set! number (list-ref slotdef (- pinseq 1)))
@@ -500,13 +500,13 @@
 			(mirror (component-mirror? comp))
 			(attr (object-attribs comp))
 			(iattr (inherited-attribs comp))
-			(refdes (get-attrib attr "refdes"))
-			(graphical (get-attrib iattr "graphical"))
-			(device (get-attrib attr "device"))
-			(value (get-attrib attr "value"))
-			(footprint (get-attrib attr "footprint"))
-			(netname (get-attrib attr "netname"))
-			(net (get-attrib attr "net"))
+			(refdes (get-attrib attr "refdes" ""))
+			(graphical (get-attrib iattr "graphical" ""))
+			(device (get-attrib attr "device" (get-attrib iattr "device" "")))
+			(value (get-attrib attr "value" (get-attrib iattr "value" "")))
+			(footprint (get-attrib attr "footprint" (get-attrib iattr "footprint" "")))
+			(netname (get-attrib attr "netname" (get-attrib iattr "netname" "")))
+			(net (get-attrib attr "net" ""))
 			(pincount (get-pincount comp))
 			(isxref (and (equal? pincount 1) (string=? device "none") (equal? (get-num-attrib attr "net") 1)))
 			(ispwr  (and (equal? pincount 1) (not (string=? netname ""))))
@@ -670,8 +670,8 @@
 					((component? obj)
 						(let* (
 								(attr (object-attribs obj))
-								(ref (get-attrib attr "refdes"))
-								(slot (get-attrib attr "slot"))
+								(ref (get-attrib attr "refdes" ""))
+								(slot (get-attrib attr "slot" ""))
 							)
 							(cond 
 								((or (string-null? ref) (string-any #\? ref))
@@ -731,7 +731,7 @@
 						(let* (
 								(basename (component-basename obj))
 								(attr (object-attribs obj))
-								(slot (get-attrib attr "slot"))
+								(slot (get-attrib attr "slot" ""))
 								(symboldef (if (not (string-null? slot)) (string-append basename "-" slot) basename))
 								(kicaditem (assoc symboldef symbolmap))
 							)
